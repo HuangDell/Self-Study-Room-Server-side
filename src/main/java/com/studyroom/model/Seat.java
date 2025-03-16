@@ -29,6 +29,6 @@ public class Seat {
     private Integer maxBookingTime = 120; // 默认最大预约时间（分钟）
 
     public enum SeatStatus {
-        AVAILABLE, UNAVAILABLE, OCCUPIED
+        AVAILABLE, UNAVAILABLE, OCCUPIED, TEMPORARY_LEAVE
     }
 }

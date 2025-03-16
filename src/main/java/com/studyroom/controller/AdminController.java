@@ -1,11 +1,9 @@
 package com.studyroom.controller;
 
-import com.studyroom.config.JwtUtil;
+import com.studyroom.util.JwtUtil;
 import com.studyroom.dto.*;
-import com.studyroom.model.Admin;
 import com.studyroom.model.Booking;
 import com.studyroom.model.Room;
-import com.studyroom.model.Seat;
 import com.studyroom.service.AdminService;
 import com.studyroom.service.BookingService;
 import com.studyroom.service.RoomService;
@@ -154,12 +152,12 @@ public class AdminController {
                     Map<String, Object> map = new HashMap<>();
                     map.put("room_id", booking.getRoom().getId().toString());
                     map.put("seat_id", booking.getSeat().getSeatNumber());
-                    map.put("user_id", booking.getUserId());
+                    map.put("user_id", booking.getStudent().getStudentId());
                     map.put("start_time", booking.getStartTime());
                     map.put("end_time", booking.getEndTime());
                     return map;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(Map.of("bookings", bookingsResponse));
     }

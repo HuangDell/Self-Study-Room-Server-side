@@ -1,4 +1,4 @@
-package com.studyroom.config;
+package com.studyroom.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

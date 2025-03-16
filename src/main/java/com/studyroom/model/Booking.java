@@ -1,34 +1,39 @@
 package com.studyroom.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "bookings")
+@Data
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     @ManyToOne
-    @JoinColumn(name = "seat_id", nullable = false)
+    @JoinColumn(name = "seat_id")
     private Seat seat;
+    
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
 
-    @Column(nullable = false)
-    private String userId;
-
-    @Column(nullable = false)
     private LocalDateTime startTime;
 
-    @Column(nullable = false)
     private LocalDateTime endTime;
+
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status = BookingStatus.ACTIVE;
+
+    public enum BookingStatus {
+        ACTIVE,
+        COMPLETED,
+        CANCELLED,
+    }
 }
