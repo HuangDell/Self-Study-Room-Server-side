@@ -1,5 +1,7 @@
 package com.studyroom.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,18 +11,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CompositeUserDetailsService implements UserDetailsService {
+@RequiredArgsConstructor
+public class CompositeUserDetailsService {
 
     private final List<UserDetailsService> userDetailsServices;
 
-    public CompositeUserDetailsService(List<UserDetailsService> userDetailsServices) {
-        // 过滤掉自己，防止循环引用
-        this.userDetailsServices = userDetailsServices.stream()
-                .filter(service -> !(service instanceof CompositeUserDetailsService))
-                .toList();
-    }
+//    public CompositeUserDetailsService(List<UserDetailsService> userDetailsServices) {
+//        // 过滤掉自己，防止循环引用
+//        this.userDetailsServices = userDetailsServices.stream()
+//                .filter(service -> !(service instanceof CompositeUserDetailsService))
+//                .toList();
+//    }
 
-    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UsernameNotFoundException lastException = null;
 

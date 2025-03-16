@@ -20,6 +20,10 @@ public class Room {
     @Column(nullable = false)
     private String location;
 
+    private String description;
+
+    private int capacity;
+
     private String openTime = "08:00";
 
     private String closeTime = "22:00";
