@@ -35,8 +35,25 @@ public class AdminController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        String token = jwtUtil.generateToken(loginRequest.getUsername());
-        return ResponseEntity.ok(new LoginResponse(token));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
+
+            if (authentication.isAuthenticated()) {
+                String token = jwtUtil.generateToken(loginRequest.getUsername());
+                return ResponseEntity.ok(new LoginResponse(token));
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid credentials"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid credentials"));
+        }
     }
 
     @PostMapping("/rooms")
@@ -77,7 +94,7 @@ public class AdminController {
                     map.put("location", room.getLocation());
                     return map;
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of("rooms", roomsResponse));
     }
