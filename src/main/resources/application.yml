@@ -16,6 +16,7 @@ spring:
 server:
   error:
     include-message: always
+  port: 8079
 
 
 jwt:
