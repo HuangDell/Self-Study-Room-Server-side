@@ -9,4 +9,5 @@ public class RoomRequest {
     private String openTime;
     private String closeTime;
     private String status;
+    private String campus;
 }

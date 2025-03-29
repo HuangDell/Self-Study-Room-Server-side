@@ -34,6 +34,7 @@ public class RoomService {
         Room room = new Room();
         room.setName(roomRequest.getName());
         room.setLocation(roomRequest.getLocation());
+        room.setCampus(roomRequest.getCampus());
 
         return roomRepository.save(room);
     }

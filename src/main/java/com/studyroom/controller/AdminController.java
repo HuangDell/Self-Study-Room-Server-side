@@ -92,9 +92,10 @@ public class AdminController {
                     map.put("room_id", room.getId().toString());
                     map.put("name", room.getName());
                     map.put("location", room.getLocation());
+                    map.put("campus", room.getCampus());
                     return map;
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(Map.of("rooms", roomsResponse));
     }

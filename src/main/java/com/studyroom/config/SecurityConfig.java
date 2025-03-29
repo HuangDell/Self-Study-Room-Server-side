@@ -1,5 +1,7 @@
 package com.studyroom.config;
 
+import com.studyroom.util.UserAccessDeniedHandler;
+import com.studyroom.util.UserAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserAccessDeniedHandler userAccessDeniedHandler;
+    private final UserAuthenticationEntryPoint userAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,6 +35,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1.0/admin/**").authenticated()
                         .requestMatchers("/api/v1.0/student/**").hasRole("STUDENT")
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex-> ex
+                        .accessDeniedHandler(userAccessDeniedHandler)
+                        .authenticationEntryPoint(userAuthenticationEntryPoint)
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

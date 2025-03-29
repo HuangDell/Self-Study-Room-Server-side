@@ -20,7 +20,11 @@ public class Room {
     @Column(nullable = false)
     private String location;
 
+    @Column(nullable = false)
+    private String campus;
+
     private String description;
+
 
     private int capacity;
 

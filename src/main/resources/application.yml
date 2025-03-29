@@ -16,3 +16,7 @@ spring:
 server:
   error:
     include-message: always
+
+
+jwt:
+  secret: "thisIsAVeryLongSecretKeyThatHasAtLeast32BytesForHS256Algorithm12345678"
