@@ -34,6 +34,12 @@ public class StudentController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        // System.out.println("1111111111111111111111111111111111111");
+        // System.out.println(loginRequest.toString());
+        // Map<String, String> response = new HashMap<>();
+        // response.put("token", "1");
+        // return ResponseEntity.ok(response);
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
