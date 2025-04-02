@@ -22,12 +22,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;  // Add this import
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,6 +43,9 @@ public class StudentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -92,17 +98,33 @@ public class StudentControllerTest {
         testBooking.setEndTime(LocalDateTime.now().plusHours(3));
         testBooking.setStatus(Booking.BookingStatus.ACTIVE);
 
-        // 模拟认证上下文
+        // 改进认证模拟
         UserDetails userDetails = User.withUsername("student")
                 .password("password")
-                .authorities("STUDENT")
+                .roles("STUDENT")  // 使用roles而不是authorities
                 .build();
+        
+        
+        // 配置UserDetailsService模拟
+        when(compositeUserDetailsService.loadUserByUsername("student")).thenReturn(userDetails);
+        when(compositeUserDetailsService.loadUserByUsername(anyString())).thenReturn(userDetails);
+        
+        // 配置JWT验证
+        when(jwtUtil.validateToken(anyString(), anyString())).thenReturn(true);
+        when(jwtUtil.extractUsername(anyString())).thenReturn("student");
+        when(jwtUtil.generateToken(anyString())).thenReturn("test-jwt-token");
+
+        
+        // 设置安全上下文
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
+        
+        // 配置学生服务
+        when(studentService.findByUsername(anyString())).thenReturn(testStudent);
 
-        // 配置服务模拟
-        when(studentService.findByUsername("student")).thenReturn(testStudent);
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
     }
 
     @Test
@@ -112,13 +134,20 @@ public class StudentControllerTest {
         loginRequest.setUsername("student");
         loginRequest.setPassword("password");
 
-        Authentication mockAuth = Mockito.mock(Authentication.class);
+        // 创建更完整的认证对象
+        Authentication mockAuth = new UsernamePasswordAuthenticationToken(
+                "student", "password", Collections.singletonList(() -> "ROLE_STUDENT"));
         when(authenticationManager.authenticate(any())).thenReturn(mockAuth);
         when(jwtUtil.generateToken(anyString())).thenReturn("test-jwt-token");
+        
+        // 设置安全上下文
+        SecurityContextHolder.getContext().setAuthentication(mockAuth);
 
-        // 执行测试
+        // 添加请求头中的Authorization
+        System.out.println(objectMapper.writeValueAsString(loginRequest));
         mockMvc.perform(post("/api/v1.0/student/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        // .header("Authorization", "Bearer test-jwt-token")
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("test-jwt-token"));

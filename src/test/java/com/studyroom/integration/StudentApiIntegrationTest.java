@@ -18,11 +18,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;  // Add this import
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken; // 添加这行
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,6 +39,9 @@ public class StudentApiIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -75,6 +86,7 @@ public class StudentApiIntegrationTest {
         testRoom.setName("Test Room");
         testRoom.setCapacity(20);
         testRoom.setDescription("Test Description");
+        testRoom.setLocation("Test Location");
         roomRepository.save(testRoom);
 
         testSeat = new Seat();
@@ -96,6 +108,18 @@ public class StudentApiIntegrationTest {
 
         jwtToken = objectMapper.readTree(result.getResponse().getContentAsString())
                 .get("token").asText();
+
+        // 获取JWT令牌后，设置安全上下文
+        UserDetails userDetails = User.withUsername("teststudent")
+                .password(passwordEncoder.encode("password"))
+                .roles("STUDENT")
+                .build();
+        
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
