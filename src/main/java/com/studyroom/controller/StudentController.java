@@ -6,10 +6,13 @@ import com.studyroom.model.Booking;
 import com.studyroom.model.Room;
 import com.studyroom.model.Seat;
 import com.studyroom.model.Student;
+import com.studyroom.service.BookingService;
+import com.studyroom.service.SeatService;
 import com.studyroom.util.JwtUtil;
 import com.studyroom.service.RoomService;
 import com.studyroom.service.StudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,15 +34,11 @@ public class StudentController {
     private final JwtUtil jwtUtil;
     private final StudentService studentService;
     private final RoomService roomService;
+    private final BookingService bookingService;
+    private final SeatService seatService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // System.out.println("1111111111111111111111111111111111111");
-        // System.out.println(loginRequest.toString());
-        // Map<String, String> response = new HashMap<>();
-        // response.put("token", "1");
-        // return ResponseEntity.ok(response);
-
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -82,7 +81,7 @@ public class StudentController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Student student = studentService.findByUsername(authentication.getName());
 
-        List<Booking> bookings = roomService.getBookingHistory(student);
+        List<Booking> bookings = bookingService.getAllBookingsByStudentId(student.getId());
 
         List<Map<String, Object>> history = bookings.stream().map(booking -> {
             Map<String, Object> entry = new HashMap<>();
@@ -99,21 +98,37 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/seats")
-    public ResponseEntity<?> searchSeats(@RequestParam String query) {
-        List<Seat> seats = roomService.searchSeats(query);
-
-        List<Map<String, String>> seatsList = seats.stream().map(seat -> {
-            Map<String, String> seatInfo = new HashMap<>();
-            seatInfo.put("seat_id", seat.getId().toString());
-            seatInfo.put("room_id", seat.getRoom().getId().toString());
-            seatInfo.put("status", seat.getStatus().toString().toLowerCase());
-            return seatInfo;
-        }).collect(Collectors.toList());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("seats", seatsList);
-        return ResponseEntity.ok(response);
+    /**
+     * 获取roomId下的所有座位信息
+     * @param roomId
+     * @return
+     */
+    @GetMapping("/rooms/{roomId}/seats")
+    public ResponseEntity<?> getSeatsByRoom(@PathVariable Long roomId) {
+        try {
+            List<Seat> seats = seatService.getSeats(roomId);
+            List<Map<String, Object>> seatsResponse = seats.stream()
+                    .map(seat->{
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("seat_id", seat.getId().toString());
+                        map.put("name", seat.getName());
+                        map.put("status", seat.getStatus());
+                        map.put("has_socket",seat.isHasSocket());
+                        map.put("ordering_list",bookingService.getAllBookingsBySeat(seat.getId()).stream()
+                                .map(booking -> {
+                                    Map<String, Object> imap = new HashMap<>();
+                                    imap.put("start_time", booking.getStartTime());
+                                    imap.put("end_time", booking.getEndTime());
+                                    return imap;
+                                }));
+                        return map;
+                    })
+                    .toList();
+            return ResponseEntity.ok(Map.of("seats", seatsResponse));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/seats/{seatId}/checkin")
@@ -129,20 +144,25 @@ public class StudentController {
     }
 
     @GetMapping("/rooms")
-    public ResponseEntity<?> getRooms() {
-        Map<Room, Long> roomsWithAvailableSeats = roomService.getRoomsWithAvailableSeats();
+    public ResponseEntity<?> getAllRooms() {
+        List<Room> rooms = roomService.getAllRooms();
+        List<Map<String, Object>> roomsResponse = rooms.stream()
+                .map(room -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("room_id", room.getId().toString());
+                    map.put("name", room.getName());
+                    map.put("location", room.getLocation());
+                    map.put("status", room.getStatus());
+                    map.put("type",room.getType());
+                    map.put("seat_number",seatService.getSeats(room.getId()).size());
+                    map.put("capacity",room.getCapacity());
+                    map.put("open_time",room.getOpenTime());
+                    map.put("close_time",room.getCloseTime());
+                    return map;
+                })
+                .toList();
 
-        List<Map<String, Object>> roomsList = roomsWithAvailableSeats.entrySet().stream().map(entry -> {
-            Map<String, Object> roomInfo = new HashMap<>();
-            roomInfo.put("room_id", entry.getKey().getId().toString());
-            roomInfo.put("name", entry.getKey().getName());
-            roomInfo.put("available_seats", entry.getValue());
-            return roomInfo;
-        }).collect(Collectors.toList());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("rooms", roomsList);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("rooms", roomsResponse));
     }
 
     @PostMapping("/rooms/{roomId}/book")

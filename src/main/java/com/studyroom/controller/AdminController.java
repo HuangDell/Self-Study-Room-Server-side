@@ -145,7 +145,7 @@ public class AdminController {
                         return map;
                     })
                     .toList();
-            return ResponseEntity.ok(Map.of("seats", seats));
+            return ResponseEntity.ok(Map.of("seats", seatsResponse));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));

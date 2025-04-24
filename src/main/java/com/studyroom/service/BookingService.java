@@ -31,4 +31,8 @@ public class BookingService {
 
         return bookingRepository.findTodayBookingsBySeatId(seatId, startOfDay, endOfDay);
     }
+
+    public List<Booking> getAllBookingsByStudentId(Long studentId) {
+        return bookingRepository.findByStudentIdOrderByStartTimeDesc(studentId);
+    }
 }

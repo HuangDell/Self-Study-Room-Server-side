@@ -23,4 +23,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("seatId") Long seatId,
             @Param("dayStart") LocalDateTime dayStart,
             @Param("dayEnd") LocalDateTime dayEnd);
+
+    List<Booking> findByStudentIdOrderByStartTimeDesc(Long id);
 }
