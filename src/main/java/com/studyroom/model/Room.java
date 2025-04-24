@@ -18,19 +18,17 @@ public class Room {
     private String name;
 
     @Column(nullable = false)
-    private String location;
-
-    @Column(nullable = false)
-    private String campus;
-
-    private String description;
-
+    private int type;
 
     private int capacity;
+
+    private String description;
 
     private String openTime = "08:00";
 
     private String closeTime = "22:00";
+
+    private String location;
 
     @Enumerated(EnumType.STRING)
     private RoomStatus status = RoomStatus.AVAILABLE;

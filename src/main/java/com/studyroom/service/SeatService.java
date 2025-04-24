@@ -8,6 +8,8 @@ import com.studyroom.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class SeatService {
@@ -52,5 +54,9 @@ public class SeatService {
         }
 
         return seatRepository.save(seat);
+    }
+
+    public List<Seat> getSeats(Long roomId){
+        return seatRepository.findByRoomId(roomId);
     }
 }

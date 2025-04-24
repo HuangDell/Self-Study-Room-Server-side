@@ -1,5 +1,6 @@
 package com.studyroom.controller;
 
+import com.studyroom.model.Seat;
 import com.studyroom.util.JwtUtil;
 import com.studyroom.dto.*;
 import com.studyroom.model.Booking;
@@ -92,7 +93,12 @@ public class AdminController {
                     map.put("room_id", room.getId().toString());
                     map.put("name", room.getName());
                     map.put("location", room.getLocation());
-                    map.put("campus", room.getCampus());
+                    map.put("status", room.getStatus());
+                    map.put("type",room.getType());
+                    map.put("seat_number",seatService.getSeats(room.getId()).size());
+                    map.put("capacity",room.getCapacity());
+                    map.put("open_time",room.getOpenTime());
+                    map.put("close_time",room.getCloseTime());
                     return map;
                 })
                 .toList();
@@ -105,6 +111,41 @@ public class AdminController {
         try {
             roomService.updateRoom(roomId, roomRequest);
             return ResponseEntity.ok(new ApiResponse("Room updated successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取roomId下的所有座位信息
+     * @param roomId
+     * @return
+     */
+    @GetMapping("/rooms/{roomId}/seats")
+    public ResponseEntity<?> getSeatsByRoom(@PathVariable Long roomId) {
+        try {
+            List<Seat> seats = seatService.getSeats(roomId);
+            List<Map<String, Object>> seatsResponse = seats.stream()
+                    .map(seat->{
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("seat_id", seat.getId().toString());
+                        map.put("name", seat.getName());
+                        map.put("status", seat.getStatus());
+                        map.put("has_socket",seat.isHasSocket());
+                        map.put("ordering_list",bookingService.getAllBookingsBySeat(seat.getId()).stream()
+                                .map(booking -> {
+                                    Map<String, Object> imap = new HashMap<>();
+                                    imap.put("student_id", booking.getStudent().getStudentId());
+                                    imap.put("student_name", booking.getStudent().getName());
+                                    imap.put("start_time", booking.getStartTime());
+                                    imap.put("end_time", booking.getEndTime());
+                                    return imap;
+                                }));
+                        return map;
+                    })
+                    .toList();
+            return ResponseEntity.ok(Map.of("seats", seats));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));

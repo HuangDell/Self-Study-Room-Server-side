@@ -27,14 +27,17 @@ public class RoomService {
 
     public Room createRoom(RoomRequest roomRequest) {
         // 检查自习室是否已存在
-        if (roomRepository.findByNameAndLocation(roomRequest.getName(), roomRequest.getLocation()).isPresent()) {
+        if (roomRepository.findByName(roomRequest.getName()).isPresent()) {
             throw new RuntimeException("Room already exists");
         }
 
         Room room = new Room();
         room.setName(roomRequest.getName());
+        room.setType(roomRequest.getType());
+        room.setCapacity(roomRequest.getCapacity());
+        room.setOpenTime(roomRequest.getOpenTime());
+        room.setCloseTime(roomRequest.getCloseTime());
         room.setLocation(roomRequest.getLocation());
-        room.setCampus(roomRequest.getCampus());
 
         return roomRepository.save(room);
     }
@@ -64,6 +67,18 @@ public class RoomService {
 
         if (roomRequest.getStatus() != null) {
             room.setStatus(Room.RoomStatus.valueOf(roomRequest.getStatus().toUpperCase()));
+        }
+
+        if (roomRequest.getCapacity() != null){
+            room.setCapacity(roomRequest.getCapacity());
+        }
+
+        if (roomRequest.getLocation() != null) {
+            room.setLocation(roomRequest.getLocation());
+        }
+
+        if (roomRequest.getType() != null) {
+            room.setType(roomRequest.getType());
         }
 
         return roomRepository.save(room);
