@@ -92,7 +92,7 @@ public class AdminApiIntegrationTest {
         testRoom.setCapacity(20);
         testRoom.setDescription("Test Description");
         testRoom.setLocation("Test Location");
-        testRoom.setCampus("Test Campus");
+//        testRoom.setCampus("Test Campus");
         roomRepository.save(testRoom);
 
         testSeat = new Seat();
@@ -152,7 +152,7 @@ public class AdminApiIntegrationTest {
         RoomRequest roomRequest = new RoomRequest();
         roomRequest.setName("New Room");
         roomRequest.setLocation("New Location");
-        roomRequest.setCampus("New Campus");
+//        roomRequest.setCampus("New Campus");
 
         MvcResult result = mockMvc.perform(post("/api/v1.0/admin/rooms")
                         .header("Authorization", jwtToken)

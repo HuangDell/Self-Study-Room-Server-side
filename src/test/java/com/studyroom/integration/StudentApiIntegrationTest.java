@@ -88,7 +88,7 @@ public class StudentApiIntegrationTest {
         testRoom.setCapacity(20);
         testRoom.setDescription("Test Description");
         testRoom.setLocation("Test Location");
-        testRoom.setCampus("Test Campus");
+//        testRoom.setCampus("Test Campus");
         roomRepository.save(testRoom);
 
         testSeat = new Seat();
