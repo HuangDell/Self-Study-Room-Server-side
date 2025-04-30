@@ -6,6 +6,6 @@ import java.time.LocalDateTime;
 @Data
 public class BookingRequest {
     private String seatId;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private Long startTime;
+    private Long endTime;
 }

@@ -2,6 +2,8 @@ package com.studyroom.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,9 +26,9 @@ public class Booking {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    private LocalDateTime startTime;
+    private Instant startTime;
 
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status = BookingStatus.ACTIVE;

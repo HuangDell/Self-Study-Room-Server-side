@@ -5,8 +5,7 @@ import com.studyroom.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 
 @Service
@@ -25,11 +24,10 @@ public class BookingService {
      * @return
      */
     public List<Booking> getAllBookingsBySeat(Long seatId) {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        Instant dayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant dayEnd = LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant();
 
-        return bookingRepository.findTodayBookingsBySeatId(seatId, startOfDay, endOfDay);
+        return bookingRepository.findTodayBookingsBySeatId(seatId, dayStart, dayEnd);
     }
 
     public List<Booking> getAllBookingsByStudentId(Long studentId) {

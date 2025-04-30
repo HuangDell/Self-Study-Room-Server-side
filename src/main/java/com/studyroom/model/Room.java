@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @Entity
 @NoArgsConstructor
@@ -24,9 +26,9 @@ public class Room {
 
     private String description;
 
-    private String openTime = "08:00";
+    private Instant openTime ;
 
-    private String closeTime = "22:00";
+    private Instant closeTime ;
 
     private String location;
 

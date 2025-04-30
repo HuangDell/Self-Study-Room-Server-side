@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,8 @@ public class RoomService {
         room.setName(roomRequest.getName());
         room.setType(roomRequest.getType());
         room.setCapacity(roomRequest.getCapacity());
-        room.setOpenTime(roomRequest.getOpenTime());
-        room.setCloseTime(roomRequest.getCloseTime());
+        room.setOpenTime(Instant.ofEpochMilli(roomRequest.getOpenTime()));
+        room.setCloseTime(Instant.ofEpochMilli(roomRequest.getCloseTime()));
         room.setLocation(roomRequest.getLocation());
 
         return roomRepository.save(room);
@@ -58,11 +59,11 @@ public class RoomService {
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
         if (roomRequest.getOpenTime() != null) {
-            room.setOpenTime(roomRequest.getOpenTime());
+            room.setOpenTime(Instant.ofEpochMilli(roomRequest.getOpenTime()));
         }
 
         if (roomRequest.getCloseTime() != null) {
-            room.setCloseTime(roomRequest.getCloseTime());
+            room.setCloseTime(Instant.ofEpochMilli(roomRequest.getCloseTime()));
         }
 
         if (roomRequest.getStatus() != null) {
@@ -105,7 +106,7 @@ public class RoomService {
 
     @Transactional
     public Booking bookSeat(Student student, Long roomId, Long seatId,
-                            LocalDateTime startTime, LocalDateTime endTime) {
+                            Long startTime, Long endTime) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
@@ -122,8 +123,8 @@ public class RoomService {
         Booking booking = new Booking();
         booking.setStudent(student);
         booking.setSeat(seat);
-        booking.setStartTime(startTime);
-        booking.setEndTime(endTime);
+        booking.setStartTime(Instant.ofEpochMilli(startTime));
+        booking.setEndTime(Instant.ofEpochMilli(endTime));
 
         return bookingRepository.save(booking);
     }
