@@ -90,7 +90,7 @@ public class AdminController {
         List<Map<String, Object>> roomsResponse = rooms.stream()
                 .map(room -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("room_id", room.getId().toString());
+                    map.put("room_id", room.getId());
                     map.put("name", room.getName());
                     map.put("location", room.getLocation());
                     map.put("status", room.getStatus());

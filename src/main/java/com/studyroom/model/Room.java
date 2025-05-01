@@ -32,7 +32,7 @@ public class Room {
 
     private String location;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private RoomStatus status = RoomStatus.AVAILABLE;
 
     public enum RoomStatus {
