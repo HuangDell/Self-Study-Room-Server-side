@@ -1,10 +1,7 @@
 package com.studyroom.config;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +18,7 @@ public class JacksonConfig {
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_INDEX, true);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         // 配置JsonSerializer以输出毫秒整数而非秒小数
         SimpleModule module = new SimpleModule();

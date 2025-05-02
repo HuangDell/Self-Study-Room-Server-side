@@ -129,8 +129,8 @@ public class AdminController {
             List<Map<String, Object>> seatsResponse = seats.stream()
                     .map(seat->{
                         Map<String, Object> map = new HashMap<>();
-                        map.put("seat_id", seat.getId().toString());
-                        map.put("name", seat.getName());
+                        map.put("seat_id", seat.getId());
+                        map.put("name", seat.getSeatName());
                         map.put("status", seat.getStatus());
                         map.put("has_socket",seat.isHasSocket());
                         map.put("ordering_list",bookingService.getAllBookingsBySeat(seat.getId()).stream()
@@ -141,7 +141,7 @@ public class AdminController {
                                     imap.put("start_time", booking.getStartTime());
                                     imap.put("end_time", booking.getEndTime());
                                     return imap;
-                                }));
+                                }).toList());
                         return map;
                     })
                     .toList();
@@ -192,7 +192,7 @@ public class AdminController {
         List<Map<String, Object>> bookingsResponse = bookings.stream()
                 .map(booking -> {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("room_id", booking.getRoom().getId().toString());
+                    map.put("room_id", booking.getRoom().getId());
                     map.put("seat_id", booking.getSeat().getSeatNumber());
                     map.put("user_id", booking.getStudent().getStudentId());
                     map.put("start_time", booking.getStartTime());

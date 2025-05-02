@@ -104,30 +104,30 @@ public class RoomService {
         return seatRepository.searchSeats(query);
     }
 
-    @Transactional
-    public Booking bookSeat(Student student, Long roomId, Long seatId,
-                            Long startTime, Long endTime) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new RuntimeException("Seat not found"));
-
-        if (seat.getStatus() != Seat.SeatStatus.AVAILABLE) {
-            throw new RuntimeException("Seat is not available");
-        }
-
-        seat.setStatus(Seat.SeatStatus.OCCUPIED);
-        seatRepository.save(seat);
-
-        Booking booking = new Booking();
-        booking.setStudent(student);
-        booking.setSeat(seat);
-        booking.setStartTime(Instant.ofEpochMilli(startTime));
-        booking.setEndTime(Instant.ofEpochMilli(endTime));
-
-        return bookingRepository.save(booking);
-    }
+//    @Transactional
+//    public Booking bookSeat(Student student, Long roomId, Long seatId,
+//                            Long startTime, Long endTime) {
+//        Room room = roomRepository.findById(roomId)
+//                .orElseThrow(() -> new RuntimeException("Room not found"));
+//
+//        Seat seat = seatRepository.findById(seatId)
+//                .orElseThrow(() -> new RuntimeException("Seat not found"));
+//
+//        if (seat.getStatus() != Seat.SeatStatus.AVAILABLE) {
+//            throw new RuntimeException("Seat is not available");
+//        }
+//
+//        seat.setStatus(Seat.SeatStatus.OCCUPIED);
+//        seatRepository.save(seat);
+//
+//        Booking booking = new Booking();
+//        booking.setStudent(student);
+//        booking.setSeat(seat);
+//        booking.setStartTime(Instant.ofEpochMilli(startTime));
+//        booking.setEndTime(Instant.ofEpochMilli(endTime));
+//
+//        return bookingRepository.save(booking);
+//    }
 
     @Transactional
     public void cancelBooking(Student student, Long bookingId) {

@@ -64,6 +64,21 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/seats/book")
+    public ResponseEntity<?> bookSeat(@RequestBody BookingRequest bookingRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Student student = studentService.findByUsername(authentication.getName());
+
+        seatService.bookSeat(
+                student,
+                bookingRequest
+        );
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Seat booked successfully");
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/seats/{seatId}/release")
     public ResponseEntity<?> releaseSeat(@PathVariable Long seatId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -85,11 +100,11 @@ public class StudentController {
 
         List<Map<String, Object>> history = bookings.stream().map(booking -> {
             Map<String, Object> entry = new HashMap<>();
-            entry.put("booking_id", booking.getId().toString());
-            entry.put("room_id", booking.getSeat().getRoom().getId().toString());
-            entry.put("seat_id", booking.getSeat().getSeatNumber());
-            entry.put("start_time", booking.getStartTime().toString());
-            entry.put("end_time", booking.getEndTime().toString());
+            entry.put("booking_id", booking.getId());
+            entry.put("room_id", booking.getSeat().getRoom().getId());
+            entry.put("seat_id", booking.getSeat().getId());
+            entry.put("start_time", booking.getStartTime());
+            entry.put("end_time", booking.getEndTime());
             return entry;
         }).collect(Collectors.toList());
 
@@ -111,7 +126,7 @@ public class StudentController {
                     .map(seat->{
                         Map<String, Object> map = new HashMap<>();
                         map.put("seat_id", seat.getId().toString());
-                        map.put("name", seat.getName());
+                        map.put("name", seat.getSeatName());
                         map.put("status", seat.getStatus());
                         map.put("has_socket",seat.isHasSocket());
                         map.put("ordering_list",bookingService.getAllBookingsBySeat(seat.getId()).stream()
@@ -120,7 +135,7 @@ public class StudentController {
                                     imap.put("start_time", booking.getStartTime());
                                     imap.put("end_time", booking.getEndTime());
                                     return imap;
-                                }));
+                                }).toList());
                         return map;
                     })
                     .toList();
@@ -165,25 +180,6 @@ public class StudentController {
         return ResponseEntity.ok(Map.of("rooms", roomsResponse));
     }
 
-    @PostMapping("/rooms/{roomId}/book")
-    public ResponseEntity<?> bookRoom(
-            @PathVariable Long roomId,
-            @RequestBody BookingRequest bookingRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Student student = studentService.findByUsername(authentication.getName());
-
-        roomService.bookSeat(
-                student,
-                roomId,
-                Long.parseLong(bookingRequest.getSeatId()),
-                bookingRequest.getStartTime(),
-                bookingRequest.getEndTime()
-        );
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Room booked successfully");
-        return ResponseEntity.ok(response);
-    }
 
     @DeleteMapping("/bookings/{bookingId}")
     public ResponseEntity<?> cancelBooking(@PathVariable Long bookingId) {

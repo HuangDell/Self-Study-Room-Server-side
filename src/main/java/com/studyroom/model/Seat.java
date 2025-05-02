@@ -16,7 +16,7 @@ public class Seat {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String seatName;
 
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)

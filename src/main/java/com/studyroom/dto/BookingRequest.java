@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class BookingRequest {
-    private String seatId;
+    private Long seatId;
     private Long startTime;
     private Long endTime;
 }
