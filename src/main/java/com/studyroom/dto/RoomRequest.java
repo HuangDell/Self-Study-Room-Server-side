@@ -15,6 +15,6 @@ public class RoomRequest {
     @JsonProperty("close_time")
     private Long closeTime;
     private Integer capacity;
-    private String status;
+    private Integer status;
 //    private String campus;
 }

@@ -67,7 +67,7 @@ public class RoomService {
         }
 
         if (roomRequest.getStatus() != null) {
-            room.setStatus(Room.RoomStatus.valueOf(roomRequest.getStatus().toUpperCase()));
+            room.setStatus(roomRequest.getStatus());
         }
 
         if (roomRequest.getCapacity() != null){
@@ -80,6 +80,10 @@ public class RoomService {
 
         if (roomRequest.getType() != null) {
             room.setType(roomRequest.getType());
+        }
+
+        if (roomRequest.getName() != null) {
+            room.setName(roomRequest.getName());
         }
 
         return roomRepository.save(room);

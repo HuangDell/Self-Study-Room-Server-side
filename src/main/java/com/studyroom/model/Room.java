@@ -32,10 +32,9 @@ public class Room {
 
     private String location;
 
-    @Enumerated(EnumType.ORDINAL)
-    private RoomStatus status = RoomStatus.AVAILABLE;
+    // 0 for Available, 1 for unavailable
+    private Integer status;
 
-    public enum RoomStatus {
-        AVAILABLE, UNAVAILABLE
-    }
+
+
 }
