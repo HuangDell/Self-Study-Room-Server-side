@@ -16,9 +16,7 @@ public class ApiError {
     private String message;
     private String debugMessage;
 
-    public ApiError(HttpStatus status, String message, String debugMessage) {
-        this.status = status;
+    public ApiError(String message) {
         this.message = message;
-        this.debugMessage = debugMessage;
     }
 }
