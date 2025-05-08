@@ -1,1 +1,1 @@
-docker run -d -p 8079:8079 --name selfstudy-room selfstudy-room:1.0
+docker run -d -p 8080:8080 --name selfstudy-room selfstudy-room:1.0

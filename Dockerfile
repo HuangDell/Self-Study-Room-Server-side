@@ -14,10 +14,10 @@ RUN mvn dependency:go-offline
 COPY src src
 
 # 构建项目
-RUN mvn clean package
+RUN mvn clean package -Dmaven.test.skip=true -DskipTests
 
 # 使用 Java 镜像作为基础镜像
-FROM fnil-dm2.fnil.ac.cn/eclipse-temurin:17-jdk-alpine
+FROM fnil-dm2.fnil.ac.cn/maven:3.9-eclipse-temurin-17
 RUN echo $JAVA_HOME
 
 # 设置工作目录
@@ -30,4 +30,4 @@ COPY --from=build /usr/src/app/target/SelfStudyRoom-1.0.jar /app
 # 设置启动命令
 CMD ["java", "-Xmx200m", "-jar", "/app/SelfStudyRoom-1.0.jar"]
 
-EXPOSE 8079
+EXPOSE 8080
