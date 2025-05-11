@@ -1,5 +1,6 @@
 package com.studyroom.integration;
 
+import org.springframework.test.context.ActiveProfiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyroom.dto.LoginRequest;
 import com.studyroom.dto.RoomRequest;
@@ -20,6 +21,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime; // 添加 LocalTime 导入
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -29,6 +32,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @SpringBootTest()
 @AutoConfigureMockMvc
 @Transactional
+@ActiveProfiles("test")
 public class AdminApiIntegrationTest {
 
     @Autowired
@@ -72,35 +76,40 @@ public class AdminApiIntegrationTest {
         roomRepository.deleteAll();
         studentRepository.deleteAll();
         adminRepository.deleteAll();
-
+    
         // 创建测试数据
         testAdmin = new Admin();
         testAdmin.setUsername("testadmin");
         testAdmin.setPassword(passwordEncoder.encode("password"));
         // testAdmin.setName("Test Admin");
         adminRepository.save(testAdmin);
-
+    
         testStudent = new Student();
         testStudent.setUsername("teststudent");
         testStudent.setPassword(passwordEncoder.encode("password"));
         testStudent.setName("Test Student");
         testStudent.setStudentId("ST123456");
         studentRepository.save(testStudent);
-
+    
         testRoom = new Room();
         testRoom.setName("Test Room");
         testRoom.setCapacity(20);
         testRoom.setDescription("Test Description");
         testRoom.setLocation("Test Location");
-//        testRoom.setCampus("Test Campus");
+        // testRoom.setCampus("Test Campus"); // 注释掉这一行
+        testRoom.setStatus(1); 
+        testRoom.setType(0); 
+        testRoom.setOpenTime(LocalTime.of(7, 30).atDate(java.time.LocalDate.now()).toInstant(ZoneOffset.UTC)); 
+        testRoom.setCloseTime(LocalTime.of(19, 30).atDate(java.time.LocalDate.now()).toInstant(ZoneOffset.UTC)); 
         roomRepository.save(testRoom);
-
+    
         testSeat = new Seat();
         testSeat.setSeatNumber("T1");
+        testSeat.setSeatName("T1");
         testSeat.setRoom(testRoom);
         testSeat.setStatus(Seat.SeatStatus.AVAILABLE);
         seatRepository.save(testSeat);
-
+    
         // 获取JWT令牌
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setUsername("testadmin");
@@ -152,7 +161,19 @@ public class AdminApiIntegrationTest {
         RoomRequest roomRequest = new RoomRequest();
         roomRequest.setName("New Room");
         roomRequest.setLocation("New Location");
-//        roomRequest.setCampus("New Campus");
+        // roomRequest.setCampus("New Campus"); // 添加这行代码
+        roomRequest.setCapacity(40);
+        roomRequest.setStatus(1);
+        roomRequest.setType(0);
+
+        // 修正：将时间字符串转换为Long类型的毫秒时间戳
+        long openTimeMillis = LocalTime.of(8, 0).atDate(java.time.LocalDate.now()).toInstant(ZoneOffset.UTC).toEpochMilli();
+        long closeTimeMillis = LocalTime.of(20, 0).atDate(java.time.LocalDate.now()).toInstant(ZoneOffset.UTC).toEpochMilli();
+        roomRequest.setOpenTime(openTimeMillis);
+        roomRequest.setCloseTime(closeTimeMillis);
+
+        // 如果RoomRequest中有seat_number字段，应该添加：
+        // roomRequest.setSeatNumber(3);
 
         MvcResult result = mockMvc.perform(post("/api/v1.0/admin/rooms")
                         .header("Authorization", jwtToken)
@@ -193,7 +214,7 @@ public class AdminApiIntegrationTest {
     void testCreateAndManageSeats() throws Exception {
         // 创建新座位 - 使用正确的API路径
         SeatRequest seatRequest = new SeatRequest();
-        seatRequest.setSeatNumber("S1");
+        seatRequest.setSeatName("S1"); // Changed from setSeatNumber
         seatRequest.setRoomId(testRoom.getId());
         seatRequest.setHasSocket(true);
 
@@ -215,8 +236,8 @@ public class AdminApiIntegrationTest {
         booking.setStudent(testStudent);
         booking.setSeat(testSeat);
         booking.setRoom(testRoom);
-        booking.setStartTime(LocalDateTime.now().plusHours(1));
-        booking.setEndTime(LocalDateTime.now().plusHours(3));
+        booking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
+        booking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
         booking.setStatus(Booking.BookingStatus.ACTIVE);
         bookingRepository.save(booking);
 
