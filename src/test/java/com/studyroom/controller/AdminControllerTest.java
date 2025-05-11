@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset; // Added import
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +70,7 @@ public class AdminControllerTest {
         
         seatRequest = new SeatRequest();
         seatRequest.setRoomId(1L);
-        seatRequest.setSeatNumber("A1");
+        seatRequest.setSeatName("A1"); // Changed from setSeatNumber
         seatRequest.setHasSocket(true);
     
         testRoom = new Room();
@@ -93,8 +94,8 @@ public class AdminControllerTest {
         testBooking.setStudent(testStudent);
         testBooking.setSeat(testSeat);
         testBooking.setRoom(testRoom);
-        testBooking.setStartTime(LocalDateTime.now().plusHours(1));
-        testBooking.setEndTime(LocalDateTime.now().plusHours(3));
+        testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
+        testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
         testBooking.setStatus(Booking.BookingStatus.ACTIVE);
     }
 

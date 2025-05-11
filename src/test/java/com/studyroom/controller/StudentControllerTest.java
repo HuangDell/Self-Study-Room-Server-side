@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;  // Add this 
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset; // Added import
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,8 +102,8 @@ public class StudentControllerTest {
         testBooking.setStudent(testStudent);
         testBooking.setSeat(testSeat);
         testBooking.setRoom(testRoom);
-        testBooking.setStartTime(LocalDateTime.now().plusHours(1));
-        testBooking.setEndTime(LocalDateTime.now().plusHours(3));
+        testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
+        testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
         testBooking.setStatus(Booking.BookingStatus.ACTIVE);
 
         // 简化安全配置

@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        // 直接使用 authHeader 作为 jwt，不需要移除 "Bearer " 前缀
         jwt = authHeader;
         try{
             username = jwtUtil.extractUsername(jwt);
