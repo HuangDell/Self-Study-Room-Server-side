@@ -3,9 +3,12 @@ package com.studyroom.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import io.jsonwebtoken.ExpiredJwtException;
+
+import javax.management.BadAttributeValueExpException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -26,5 +29,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleHttpMessageNotReadableException(Exception ex) {
         ApiError apiError = new ApiError("Request parameters are unrecognized");
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentialsException(Exception ex) {
+        ApiError apiError = new ApiError("Bad Credentials");
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
     }
 }
