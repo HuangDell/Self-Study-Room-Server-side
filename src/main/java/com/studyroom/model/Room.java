@@ -21,9 +21,9 @@ public class Room {
     private String name;
 
     @Column(nullable = false)
-    private int type;
+    private Integer type;
 
-    private int capacity;
+    private Integer capacity;
 
     private String description;
 

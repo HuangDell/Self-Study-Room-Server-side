@@ -28,12 +28,12 @@ public class RoomService {
 
     public Room createRoom(RoomRequest roomRequest) {
         // 检查自习室是否已存在
-        if (roomRepository.findByName(roomRequest.getName()).isPresent()) {
+        if (roomRepository.findByName(roomRequest.getRoomName()).isPresent()) {
             throw new RuntimeException("Room already exists");
         }
 
         Room room = new Room();
-        room.setName(roomRequest.getName());
+        room.setName(roomRequest.getRoomName());
         room.setType(roomRequest.getType());
         room.setCapacity(roomRequest.getCapacity());
         room.setOpenTime(Instant.ofEpochMilli(roomRequest.getOpenTime()));
@@ -83,8 +83,8 @@ public class RoomService {
             room.setType(roomRequest.getType());
         }
 
-        if (roomRequest.getName() != null) {
-            room.setName(roomRequest.getName());
+        if (roomRequest.getRoomName() != null) {
+            room.setName(roomRequest.getRoomName());
         }
 
         return roomRepository.save(room);

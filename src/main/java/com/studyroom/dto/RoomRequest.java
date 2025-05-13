@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class RoomRequest {
-    private String name;
+    private String roomName;
     private Integer type;
     private String location;
 
