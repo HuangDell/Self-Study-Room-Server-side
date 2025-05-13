@@ -126,7 +126,7 @@ public class StudentController {
                     .map(seat->{
                         Map<String, Object> map = new HashMap<>();
                         map.put("seat_id", seat.getId().toString());
-                        map.put("name", seat.getSeatName());
+                        map.put("seat_name", seat.getSeatName());
                         map.put("status", seat.getStatus());
                         map.put("has_socket",seat.isHasSocket());
                         map.put("ordering_list",bookingService.getAllBookingsBySeat(seat.getId()).stream()
@@ -165,7 +165,7 @@ public class StudentController {
                 .map(room -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("room_id", room.getId().toString());
-                    map.put("name", room.getName());
+                    map.put("room_name", room.getName());
                     map.put("location", room.getLocation());
                     map.put("status", room.getStatus());
                     map.put("type",room.getType());
