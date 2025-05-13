@@ -33,11 +33,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1.0/student/login").permitAll()
-                .requestMatchers("/api/v1.0/student/**").authenticated()
-                .requestMatchers("/api/v1.0/admin/login").permitAll()
-                .requestMatchers("/api/v1.0/admin/**").authenticated()
-                .anyRequest().permitAll()
+
+                    .requestMatchers("/api/v1.0/student/login").permitAll()
+                    .requestMatchers("/api/v1.0/student/register").permitAll()
+                    .requestMatchers("/api/v1.0/student/**").authenticated()
+                    .requestMatchers("/api/v1.0/admin/login").permitAll()
+                    .requestMatchers("/api/v1.0/admin/**").authenticated()
+                    .anyRequest().permitAll()
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement(session -> session

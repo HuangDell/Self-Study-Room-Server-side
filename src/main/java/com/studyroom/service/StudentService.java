@@ -31,6 +31,7 @@ public class StudentService implements UserDetailsService {
             student.setPassword(passwordEncoder.encode("password"));
             student.setName("Test Student");
             student.setStudentId("202500001");
+            student.setType(1);
             studentRepository.save(student);
         }
     }
@@ -45,6 +46,15 @@ public class StudentService implements UserDetailsService {
                 student.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT"))
         );
+    }
+
+    public void register(Student student) {
+
+        if (studentRepository.findByUsername(student.getUsername()).isEmpty()) {
+            student.setPassword(passwordEncoder.encode("password"));
+            studentRepository.save(student);
+        }else
+            throw new UsernameNotFoundException("Student already exists");
     }
 
     public Student findByUsername(String username) {

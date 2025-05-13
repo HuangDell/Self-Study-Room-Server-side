@@ -166,6 +166,8 @@ public class RoomService {
 
         validateStudentBooking(student, seatId);
 
+
+
         seat.setStatus(Seat.SeatStatus.OCCUPIED);
         seatRepository.save(seat);
     }

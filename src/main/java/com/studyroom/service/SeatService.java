@@ -10,7 +10,11 @@ import com.studyroom.repository.BookingRepository;
 import com.studyroom.repository.RoomRepository;
 import com.studyroom.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,9 +45,13 @@ public class SeatService {
         return seatRepository.save(seat);
     }
 
-    public void bookSeat(Student student, BookingRequest bookingRequest) {
+    public void bookSeat(Student student, BookingRequest bookingRequest) throws NoResourceFoundException {
         Seat seat = seatRepository.findById(bookingRequest.getSeatId())
-                .orElseThrow(() -> new RuntimeException("Seat not found"));
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.POST,"Seat not found"));
+        int type = seat.getRoom().getType();
+        if(type != 0 && type !=student.getType())
+            throw new AccessDeniedException("This room is not open to you");
+
 
         if (seat.getStatus() != Seat.SeatStatus.AVAILABLE) {
             throw new RuntimeException("Seat is not available");
@@ -55,15 +63,18 @@ public class SeatService {
         Booking booking = new Booking();
         booking.setStudent(student);
         booking.setSeat(seat);
+        booking.setRoom(seat.getRoom());
         booking.setStartTime(Instant.ofEpochMilli(bookingRequest.getStartTime()));
         booking.setEndTime(Instant.ofEpochMilli(bookingRequest.getEndTime()));
 
         bookingRepository.save(booking);
     }
-
+    @Transactional
     public void deleteSeat(Long seatId) {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new RuntimeException("Seat not found"));
+
+        bookingRepository.deleteBySeatId(seatId);
 
         seatRepository.delete(seat);
     }

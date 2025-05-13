@@ -2,6 +2,7 @@ package com.studyroom.controller;
 
 import com.studyroom.dto.BookingRequest;
 import com.studyroom.dto.LoginRequest;
+import com.studyroom.dto.RegisterRequest;
 import com.studyroom.model.Booking;
 import com.studyroom.model.Room;
 import com.studyroom.model.Seat;
@@ -19,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +54,20 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+        Student student = new Student();
+        student.setUsername(registerRequest.getUsername());
+        student.setPassword(registerRequest.getPassword());
+        student.setType(registerRequest.getType());
+        student.setStudentId(registerRequest.getStudentId());
+        studentService.register(student);
+        String jwt = jwtUtil.generateToken(student.getUsername());
+        Map<String, String> response = new HashMap<>();
+        response.put("token", jwt);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/seats/{seatId}/leave")
     public ResponseEntity<?> leaveSeat(@PathVariable Long seatId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -65,7 +81,7 @@ public class StudentController {
     }
 
     @PostMapping("/seats/book")
-    public ResponseEntity<?> bookSeat(@RequestBody BookingRequest bookingRequest) {
+    public ResponseEntity<?> bookSeat(@RequestBody BookingRequest bookingRequest) throws NoResourceFoundException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Student student = studentService.findByUsername(authentication.getName());
 
@@ -197,5 +213,22 @@ public class StudentController {
             response.put("error", "Booking not found");
             return ResponseEntity.status(404).body(response);
         }
+    }
+
+    @GetMapping("/information")
+    public ResponseEntity<?> getInformation() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Student student = studentService.findByUsername(authentication.getName());
+        List<Booking> bookingList = bookingService.getAllBookingsByStudentId(student.getId());
+        Booking booking = bookingList.get(0);
+        Map<String, Object> response = new HashMap<>();
+        response.put("status",booking.getStatus());
+        response.put("room_id",booking.getRoom().getId());
+        response.put("seat_id",booking.getSeat().getId());
+        response.put("room_name",booking.getRoom().getName());
+        response.put("seat_name",booking.getSeat().getSeatName());
+        response.put("start_time",booking.getStartTime());
+        response.put("end_time",booking.getEndTime());
+        return ResponseEntity.ok(response);
     }
 }
