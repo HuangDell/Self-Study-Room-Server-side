@@ -66,9 +66,62 @@ public class SeatService {
         booking.setRoom(seat.getRoom());
         booking.setStartTime(Instant.ofEpochMilli(bookingRequest.getStartTime()));
         booking.setEndTime(Instant.ofEpochMilli(bookingRequest.getEndTime()));
+        booking.setStatus(1);
 
         bookingRepository.save(booking);
     }
+
+    @Transactional
+    public void cancelBooking(Student student, Long bookingId) {
+        Booking booking = bookingRepository.findByIdAndStudent(bookingId, student)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        booking.setStatus(0);
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void temporaryLeaveSeat(Student student, Long seatId) {
+        List<Booking> activeBookings = getLatestBookingForSeat(student, seatId);
+        if (activeBookings.isEmpty()) {
+            throw new RuntimeException("Student has not booked this seat");
+        }
+        Booking booking = activeBookings.get(0);
+        booking.setStatus(3);
+        bookingRepository.save(booking);
+
+    }
+
+    @Transactional
+    public void checkInSeat(Student student, Long seatId) {
+        List<Booking> activeBookings = getLatestBookingForSeat(student, seatId);
+        if (activeBookings.isEmpty()) {
+            throw new RuntimeException("Student has not booked this seat");
+        }
+        Booking booking = activeBookings.get(0);
+        booking.setStatus(2);
+        bookingRepository.save(booking);
+
+    }
+
+    @Transactional
+    public void releaseSeat(Student student, Long seatId) {
+        Seat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new RuntimeException("Seat not found"));
+
+        List<Booking> activeBookings = getLatestBookingForSeat(student, seatId);
+        if (activeBookings.isEmpty()) {
+            throw new RuntimeException("Student has not booked this seat");
+        }
+
+        Booking booking = activeBookings.get(0);
+        booking.setStatus(2);
+        bookingRepository.save(booking);
+
+        seat.setStatus(Seat.SeatStatus.AVAILABLE);
+        seatRepository.save(seat);
+    }
+
     @Transactional
     public void deleteSeat(Long seatId) {
         Seat seat = seatRepository.findById(seatId)
@@ -95,5 +148,18 @@ public class SeatService {
 
     public List<Seat> getSeats(Long roomId){
         return seatRepository.findByRoomId(roomId);
+    }
+
+    private List<Booking> getLatestBookingForSeat(Student student, Long seatId) {
+        return bookingRepository.findByStudentOrderByStartTimeDesc(student).stream()
+                .filter(booking -> booking.getSeat().getId().equals(seatId))
+                .toList();
+    }
+
+    private void validateStudentBooking(Student student, Long seatId) {
+        List<Booking> activeBookings = getLatestBookingForSeat(student, seatId);
+        if (activeBookings.isEmpty()) {
+            throw new RuntimeException("Student has not booked this seat");
+        }
     }
 }

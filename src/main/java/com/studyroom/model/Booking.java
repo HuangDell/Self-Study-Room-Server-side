@@ -30,12 +30,7 @@ public class Booking {
 
     private Instant endTime;
 
-    @Enumerated(EnumType.STRING)
-    private BookingStatus status = BookingStatus.ACTIVE;
+    // 0 预约取消 1 有预定未签到 2 已签到 3 暂离
+    private Integer status;
 
-    public enum BookingStatus {
-        ACTIVE,
-        COMPLETED,
-        CANCELLED,
-    }
 }

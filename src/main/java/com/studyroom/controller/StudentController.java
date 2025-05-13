@@ -7,6 +7,7 @@ import com.studyroom.model.Booking;
 import com.studyroom.model.Room;
 import com.studyroom.model.Seat;
 import com.studyroom.model.Student;
+import com.studyroom.repository.BookingRepository;
 import com.studyroom.service.BookingService;
 import com.studyroom.service.SeatService;
 import com.studyroom.util.JwtUtil;
@@ -38,6 +39,7 @@ public class StudentController {
     private final RoomService roomService;
     private final BookingService bookingService;
     private final SeatService seatService;
+    private final BookingRepository bookingRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -73,7 +75,7 @@ public class StudentController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Student student = studentService.findByUsername(authentication.getName());
 
-        roomService.temporaryLeaveSeat(student, seatId);
+        seatService.temporaryLeaveSeat(student, seatId);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Seat set to leave status");
@@ -100,7 +102,7 @@ public class StudentController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Student student = studentService.findByUsername(authentication.getName());
 
-        roomService.releaseSeat(student, seatId);
+        seatService.releaseSeat(student, seatId);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Seat released successfully");
@@ -121,6 +123,7 @@ public class StudentController {
             entry.put("seat_id", booking.getSeat().getId());
             entry.put("start_time", booking.getStartTime());
             entry.put("end_time", booking.getEndTime());
+            entry.put("booking_status", booking.getStatus());
             return entry;
         }).collect(Collectors.toList());
 
@@ -167,7 +170,7 @@ public class StudentController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Student student = studentService.findByUsername(authentication.getName());
 
-        roomService.checkInSeat(student, seatId);
+        seatService.checkInSeat(student, seatId);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Checked in successfully");
@@ -203,14 +206,14 @@ public class StudentController {
         Student student = studentService.findByUsername(authentication.getName());
 
         try {
-            roomService.cancelBooking(student, bookingId);
+            seatService.cancelBooking(student, bookingId);
 
             Map<String, String> response = new HashMap<>();
             response.put("message", "Booking cancelled successfully");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, String> response = new HashMap<>();
-            response.put("error", "Booking not found");
+            response.put("error", e.getMessage());
             return ResponseEntity.status(404).body(response);
         }
     }

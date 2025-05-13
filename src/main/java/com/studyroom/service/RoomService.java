@@ -44,10 +44,16 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
+    @Transactional
     public void deleteRoom(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
+        List<Seat> seats = seatRepository.findByRoomId(roomId);
+        for (Seat seat : seats) {
+            bookingRepository.deleteBySeatId(seat.getId());
+            seatRepository.delete(seat);
+        }
         roomRepository.delete(room);
     }
 
@@ -134,77 +140,8 @@ public class RoomService {
 //        return bookingRepository.save(booking);
 //    }
 
-    @Transactional
-    public void cancelBooking(Student student, Long bookingId) {
-        Booking booking = bookingRepository.findByIdAndStudent(bookingId, student)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-
-        Seat seat = booking.getSeat();
-        seat.setStatus(Seat.SeatStatus.AVAILABLE);
-        seatRepository.save(seat);
-
-        booking.setStatus(Booking.BookingStatus.CANCELLED);
-        bookingRepository.save(booking);
-    }
-
-    @Transactional
-    public void temporaryLeaveSeat(Student student, Long seatId) {
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new RuntimeException("Seat not found"));
-
-        // 确认学生有预订此座位
-        validateStudentBooking(student, seatId);
-
-        seat.setStatus(Seat.SeatStatus.TEMPORARY_LEAVE);
-        seatRepository.save(seat);
-    }
-
-    @Transactional
-    public void checkInSeat(Student student, Long seatId) {
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new RuntimeException("Seat not found"));
-
-        validateStudentBooking(student, seatId);
 
 
 
-        seat.setStatus(Seat.SeatStatus.OCCUPIED);
-        seatRepository.save(seat);
-    }
 
-    @Transactional
-    public void releaseSeat(Student student, Long seatId) {
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new RuntimeException("Seat not found"));
-
-        List<Booking> activeBookings = getActiveBookingForSeat(student, seatId);
-        if (activeBookings.isEmpty()) {
-            throw new RuntimeException("Student has not booked this seat");
-        }
-
-        Booking booking = activeBookings.get(0);
-        booking.setStatus(Booking.BookingStatus.COMPLETED);
-        bookingRepository.save(booking);
-
-        seat.setStatus(Seat.SeatStatus.AVAILABLE);
-        seatRepository.save(seat);
-    }
-
-    public List<Booking> getBookingHistory(Student student) {
-        return bookingRepository.findByStudentOrderByStartTimeDesc(student);
-    }
-
-    private List<Booking> getActiveBookingForSeat(Student student, Long seatId) {
-        return bookingRepository.findByStudentOrderByStartTimeDesc(student).stream()
-                .filter(booking -> booking.getStatus() == Booking.BookingStatus.ACTIVE &&
-                        booking.getSeat().getId().equals(seatId))
-                .toList();
-    }
-
-    private void validateStudentBooking(Student student, Long seatId) {
-        List<Booking> activeBookings = getActiveBookingForSeat(student, seatId);
-        if (activeBookings.isEmpty()) {
-            throw new RuntimeException("Student has not booked this seat");
-        }
-    }
 }
