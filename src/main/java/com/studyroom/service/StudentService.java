@@ -51,7 +51,7 @@ public class StudentService implements UserDetailsService {
     public void register(Student student) {
 
         if (studentRepository.findByUsername(student.getUsername()).isEmpty()) {
-            student.setPassword(passwordEncoder.encode("password"));
+            student.setPassword(passwordEncoder.encode(student.getPassword()));
             studentRepository.save(student);
         }else
             throw new UsernameNotFoundException("Student already exists");
