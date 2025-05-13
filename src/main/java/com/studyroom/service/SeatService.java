@@ -72,6 +72,13 @@ public class SeatService {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new RuntimeException("Seat not found"));
 
+        if (seatRequest.getSeatName()!=null)
+            seat.setSeatName(seatRequest.getSeatName());
+        if (seatRequest.getHasSocket()!=null)
+            seat.setHasSocket(seatRequest.getHasSocket());
+        if (seatRequest.getStatus()!=null)
+            seat.setStatus(seatRequest.getStatus());
+
         return seatRepository.save(seat);
     }
 
