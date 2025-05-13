@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -35,5 +36,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleBadCredentialsException(Exception ex) {
         ApiError apiError = new ApiError("Bad Credentials");
         return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiError> handleUsernameNotFoundException(Exception ex) {
+        ApiError apiError = new ApiError("Student not found");
+        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
     }
 }

@@ -39,6 +39,7 @@ public class RoomService {
         room.setOpenTime(Instant.ofEpochMilli(roomRequest.getOpenTime()));
         room.setCloseTime(Instant.ofEpochMilli(roomRequest.getCloseTime()));
         room.setLocation(roomRequest.getLocation());
+        room.setStatus(roomRequest.getStatus());
 
         return roomRepository.save(room);
     }

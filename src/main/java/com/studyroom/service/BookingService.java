@@ -2,8 +2,10 @@ package com.studyroom.service;
 
 import com.studyroom.model.Booking;
 import com.studyroom.repository.BookingRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.*;
 import java.util.List;
