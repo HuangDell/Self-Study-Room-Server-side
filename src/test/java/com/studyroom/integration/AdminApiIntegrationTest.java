@@ -152,14 +152,14 @@ public class AdminApiIntegrationTest {
                         .header("Authorization", jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rooms").isArray())
-                .andExpect(jsonPath("$.rooms[0].name").value("Test Room"));
+                .andExpect(jsonPath("$.rooms[0].room_name").value("Test Room")); // 修改: name -> room_name
     }
 
     @Test
     void testCreateAndUpdateRoom() throws Exception {
         // 创建新房间
         RoomRequest roomRequest = new RoomRequest();
-        roomRequest.setName("New Room");
+        roomRequest.setRoomName("New Room"); // 修改: setName -> setRoomName
         roomRequest.setLocation("New Location");
         // roomRequest.setCampus("New Campus"); // 添加这行代码
         roomRequest.setCapacity(40);
@@ -194,14 +194,14 @@ public class AdminApiIntegrationTest {
         
         // 从返回的房间列表中找到名为"New Room"的房间
         for (var room : objectMapper.readTree(roomsJson).get("rooms")) {
-            if (room.get("name").asText().equals("New Room")) {
-                roomId = room.get("room_id").asText();
+            if (room.get("room_name").asText().equals("New Room")) { // 修改: name -> room_name
+                roomId = room.get("room_id").asText(); // 修改: id -> room_id
                 break;
             }
         }
 
         // 更新房间
-        roomRequest.setName("Updated Room");
+        roomRequest.setRoomName("Updated Room"); // 修改: setName -> setRoomName
         mockMvc.perform(patch("/api/v1.0/admin/rooms/" + roomId) // 使用PATCH而不是PUT
                         .header("Authorization", jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -238,7 +238,7 @@ public class AdminApiIntegrationTest {
         booking.setRoom(testRoom);
         booking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
         booking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
-        booking.setStatus(Booking.BookingStatus.ACTIVE);
+        booking.setStatus(1); // 修改: Booking.BookingStatus.ACTIVE -> 1
         bookingRepository.save(booking);
 
         // 获取所有预订 - 使用正确的API路径
@@ -249,11 +249,11 @@ public class AdminApiIntegrationTest {
 
         // 由于没有取消预订的API，我们可以跳过这部分测试
         // 或者直接通过repository更新预订状态
-        booking.setStatus(Booking.BookingStatus.CANCELLED);
+        booking.setStatus(0); // 修改: Booking.BookingStatus.CANCELLED -> 0
         bookingRepository.save(booking);
         
         // 验证预订状态已更改
         Booking updatedBooking = bookingRepository.findById(booking.getId()).orElseThrow();
-        assert updatedBooking.getStatus() == Booking.BookingStatus.CANCELLED;
+        assert updatedBooking.getStatus() == 0; // 修改: Booking.BookingStatus.CANCELLED -> 0
     }
 }

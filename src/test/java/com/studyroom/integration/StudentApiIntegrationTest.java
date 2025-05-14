@@ -94,6 +94,7 @@ public class StudentApiIntegrationTest {
         testRoom.setCapacity(20);
         testRoom.setDescription("Test Description");
         testRoom.setLocation("Test Location");
+        testRoom.setType(0); // 添加缺失的 type 属性设置
         roomRepository.save(testRoom);
     
         testSeat = new Seat();
@@ -132,7 +133,7 @@ public class StudentApiIntegrationTest {
                         .header("Authorization", jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rooms").isArray())
-                .andExpect(jsonPath("$.rooms[0].name").value("Test Room"));
+                .andExpect(jsonPath("$.rooms[0].room_name").value("Test Room")); // 修改: name -> room_name
     }
 
     @Test

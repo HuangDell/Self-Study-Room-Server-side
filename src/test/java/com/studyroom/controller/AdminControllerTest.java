@@ -65,7 +65,7 @@ public class AdminControllerTest {
         loginRequest.setPassword("password");
         
         roomRequest = new RoomRequest();
-        roomRequest.setName("Test Room");
+        roomRequest.setRoomName("Test Room"); // Changed from setName
         roomRequest.setLocation("Building A");
         
         seatRequest = new SeatRequest();
@@ -96,7 +96,7 @@ public class AdminControllerTest {
         testBooking.setRoom(testRoom);
         testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
         testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
-        testBooking.setStatus(Booking.BookingStatus.ACTIVE);
+        testBooking.setStatus(1); // Changed from Booking.BookingStatus.ACTIVE to 1
     }
 
     @Test
