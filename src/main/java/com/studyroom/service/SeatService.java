@@ -115,7 +115,7 @@ public class SeatService {
         }
 
         Booking booking = activeBookings.get(0);
-        booking.setStatus(2);
+        booking.setStatus(4);
         bookingRepository.save(booking);
 
         seat.setStatus(Seat.SeatStatus.AVAILABLE);

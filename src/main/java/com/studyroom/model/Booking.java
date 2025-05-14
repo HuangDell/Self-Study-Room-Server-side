@@ -30,7 +30,7 @@ public class Booking {
 
     private Instant endTime;
 
-    // 0 预约取消 1 有预定未签到 2 已签到 3 暂离
+    // 0 预约取消 1 有预定未签到 2 已签到 3 暂离 4 代表正常结束
     private Integer status;
 
 }
