@@ -12,11 +12,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset; // Added import
+import java.time.ZoneOffset;
 import java.util.*;
+import java.time.Instant; // Added import
+import java.time.LocalDate; // Added import
+import java.time.LocalTime; // Added import
+import java.time.ZoneId;    // Added import
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong; // Added import for anyLong()
+import static org.mockito.ArgumentMatchers.eq; // Added import for eq()
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,10 +32,10 @@ public class BookingServiceTest {
     private BookingRepository bookingRepository;
 
     @Mock
-    private SeatRepository seatRepository;
+    private SeatRepository seatRepository; // This mock is present but not used in current tests for BookingService
 
     @Mock
-    private StudentRepository studentRepository;
+    private StudentRepository studentRepository; // This mock is present but not used in current tests for BookingService
 
     @InjectMocks
     private BookingService bookingService;
@@ -61,9 +67,9 @@ public class BookingServiceTest {
         testBooking.setStudent(testStudent);
         testBooking.setSeat(testSeat);
         testBooking.setRoom(testRoom);
-        testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
-        testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
-        testBooking.setStatus(Booking.BookingStatus.ACTIVE);
+        testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC));
+        testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC));
+        testBooking.setStatus(1); // Changed from Booking.BookingStatus.ACTIVE to 1 (有预定未签到)
     }
 
     @Test
@@ -77,5 +83,36 @@ public class BookingServiceTest {
         // 验证结果
         assertEquals(1, result.size());
         assertEquals(testBooking.getId(), result.get(0).getId());
+        verify(bookingRepository, times(1)).findAll();
+    }
+
+    @Test
+    void getAllBookingsBySeat_ShouldReturnTodayBookingsForSeat() {
+        Long seatId = testSeat.getId();
+        Instant dayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant dayEnd = LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant();
+
+        when(bookingRepository.findTodayBookingsBySeatId(eq(seatId), any(Instant.class), any(Instant.class)))
+                .thenReturn(Collections.singletonList(testBooking));
+
+        List<Booking> result = bookingService.getAllBookingsBySeat(seatId);
+
+        assertEquals(1, result.size());
+        assertEquals(testBooking.getId(), result.get(0).getId());
+        // We use any(Instant.class) because the exact Instant created in the service might differ by milliseconds
+        verify(bookingRepository, times(1)).findTodayBookingsBySeatId(eq(seatId), any(Instant.class), any(Instant.class));
+    }
+
+    @Test
+    void getAllBookingsByStudentId_ShouldReturnBookingsForStudent() {
+        Long studentId = testStudent.getId();
+        when(bookingRepository.findByStudentIdOrderByStartTimeDesc(studentId))
+                .thenReturn(Collections.singletonList(testBooking));
+
+        List<Booking> result = bookingService.getAllBookingsByStudentId(studentId);
+
+        assertEquals(1, result.size());
+        assertEquals(testBooking.getId(), result.get(0).getId());
+        verify(bookingRepository, times(1)).findByStudentIdOrderByStartTimeDesc(studentId);
     }
 }
