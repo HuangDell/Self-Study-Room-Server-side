@@ -64,6 +64,8 @@ public class StudentController {
         student.setPassword(registerRequest.getPassword());
         student.setType(registerRequest.getType());
         student.setStudentId(registerRequest.getStudentId());
+        student.setEmail(registerRequest.getEmail());
+        student.setPhone(registerRequest.getPhone());
         studentService.register(student);
         String jwt = jwtUtil.generateToken(student.getUsername());
         Map<String, String> response = new HashMap<>();

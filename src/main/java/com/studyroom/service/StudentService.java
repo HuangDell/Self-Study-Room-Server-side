@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -31,6 +32,8 @@ public class StudentService implements UserDetailsService {
             student.setPassword(passwordEncoder.encode("password"));
             student.setName("Test Student");
             student.setStudentId("202500001");
+            student.setEmail("student@gmail.com");
+            student.setPhone("1234568910");
             student.setType(1);
             studentRepository.save(student);
         }
@@ -60,5 +63,9 @@ public class StudentService implements UserDetailsService {
     public Student findByUsername(String username) {
         return studentRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Student not found"));
+    }
+
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
     }
 }

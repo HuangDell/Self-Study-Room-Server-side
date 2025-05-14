@@ -25,4 +25,9 @@ public class Student {
     private String studentId; // 学号
 
     private Integer type;
+
+    private String email;
+
+    private String phone;
+
 }

@@ -1,14 +1,12 @@
 package com.studyroom.controller;
 
 import com.studyroom.model.Seat;
+import com.studyroom.model.Student;
+import com.studyroom.service.*;
 import com.studyroom.util.JwtUtil;
 import com.studyroom.dto.*;
 import com.studyroom.model.Booking;
 import com.studyroom.model.Room;
-import com.studyroom.service.AdminService;
-import com.studyroom.service.BookingService;
-import com.studyroom.service.RoomService;
-import com.studyroom.service.SeatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +31,7 @@ public class AdminController {
     private final BookingService bookingService;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final StudentService studentService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -55,6 +54,21 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid credentials"));
         }
+    }
+
+    @GetMapping("/students")
+    public ResponseEntity<?> getStudents() {
+        List<Student> students = studentService.getAllStudents();
+        List<?> response = students.stream().map(student ->{
+            Map<String, Object> map = new HashMap<>();
+            map.put("student_id", student.getStudentId());
+            map.put("username", student.getUsername());
+            map.put("email", student.getEmail());
+            map.put("phone", student.getPhone());
+            map.put("type",student.getType());
+            return map;
+        }).toList();
+        return ResponseEntity.ok(Map.of("students",response));
     }
 
     @PostMapping("/rooms")
