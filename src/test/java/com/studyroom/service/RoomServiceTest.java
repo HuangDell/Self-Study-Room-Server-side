@@ -15,9 +15,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant; // Added import
 import java.time.LocalDateTime;
-import java.time.ZoneOffset; // Added import
+import java.time.ZoneOffset; 
 import java.util.*;
+import com.studyroom.dto.RoomRequest; // Added import
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,39 +40,150 @@ public class RoomServiceTest {
     @InjectMocks
     private RoomService roomService;
 
-    private Student testStudent;
     private Room testRoom;
     private Seat testSeat;
-    private Booking testBooking;
-    private List<Booking> activeBookings;
+    // Removed testStudent, testBooking, activeBookings as they are no longer used by RoomService tests
 
     @BeforeEach
     void setUp() {
         // 设置测试数据
-        testStudent = new Student();
-        testStudent.setId(1L);
-        testStudent.setUsername("student");
-
         testRoom = new Room();
         testRoom.setId(1L);
         testRoom.setName("Test Room");
+        testRoom.setType(1);
+        testRoom.setCapacity(50);
+        testRoom.setLocation("Building A");
+        testRoom.setStatus(0); // Available
+        testRoom.setOpenTime(Instant.now());
+        testRoom.setCloseTime(Instant.now().plusSeconds(3600 * 8));
+
 
         testSeat = new Seat();
         testSeat.setId(1L);
         testSeat.setSeatNumber("A1");
         testSeat.setRoom(testRoom);
         testSeat.setStatus(Seat.SeatStatus.AVAILABLE);
+    }
 
-        testBooking = new Booking();
-        testBooking.setId(1L);
-        testBooking.setStudent(testStudent);
-        testBooking.setSeat(testSeat);
-        testBooking.setRoom(testRoom);
-        testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC)); // Changed to Instant
-        testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC)); // Changed to Instant
-        testBooking.setStatus(Booking.BookingStatus.ACTIVE);
+    @Test
+    void createRoom_ShouldCreateRoom() {
+        RoomRequest roomRequest = new RoomRequest();
+        roomRequest.setRoomName("New Room");
+        roomRequest.setType(1);
+        roomRequest.setCapacity(10);
+        roomRequest.setOpenTime(Instant.now().toEpochMilli());
+        roomRequest.setCloseTime(Instant.now().plusSeconds(3600).toEpochMilli());
+        roomRequest.setLocation("New Location");
+        roomRequest.setStatus(0); // Available
 
-        activeBookings = Collections.singletonList(testBooking);
+        Room createdRoom = new Room();
+        createdRoom.setId(2L);
+        createdRoom.setName("New Room");
+        createdRoom.setType(1);
+        createdRoom.setCapacity(10);
+        createdRoom.setOpenTime(Instant.ofEpochMilli(roomRequest.getOpenTime()));
+        createdRoom.setCloseTime(Instant.ofEpochMilli(roomRequest.getCloseTime()));
+        createdRoom.setLocation("New Location");
+        createdRoom.setStatus(0);
+
+        when(roomRepository.findByName("New Room")).thenReturn(Optional.empty());
+        when(roomRepository.save(any(Room.class))).thenReturn(createdRoom);
+
+        Room result = roomService.createRoom(roomRequest);
+
+        assertNotNull(result);
+        assertEquals("New Room", result.getName());
+        assertEquals(10, result.getCapacity());
+        verify(roomRepository).save(any(Room.class));
+    }
+
+    @Test
+    void createRoom_RoomAlreadyExists_ShouldThrowException() {
+        RoomRequest roomRequest = new RoomRequest();
+        roomRequest.setRoomName("Test Room"); // Existing room name
+
+        when(roomRepository.findByName("Test Room")).thenReturn(Optional.of(testRoom));
+
+        assertThrows(RuntimeException.class, () -> roomService.createRoom(roomRequest));
+        verify(roomRepository, never()).save(any(Room.class));
+    }
+    
+    @Test
+    void deleteRoom_ShouldDeleteRoomAndAssociatedEntities() {
+        Seat anotherSeatInRoom = new Seat();
+        anotherSeatInRoom.setId(2L);
+        anotherSeatInRoom.setRoom(testRoom);
+    
+        List<Seat> seatsInRoom = Arrays.asList(testSeat, anotherSeatInRoom);
+    
+        when(roomRepository.findById(1L)).thenReturn(Optional.of(testRoom));
+        when(seatRepository.findByRoomId(1L)).thenReturn(seatsInRoom);
+        // No need to mock void methods like delete, verify will check if they are called
+    
+        roomService.deleteRoom(1L);
+    
+        verify(bookingRepository).deleteBySeatId(testSeat.getId());
+        verify(bookingRepository).deleteBySeatId(anotherSeatInRoom.getId());
+        verify(seatRepository).delete(testSeat);
+        verify(seatRepository).delete(anotherSeatInRoom);
+        verify(roomRepository).delete(testRoom);
+    }
+    
+    @Test
+    void deleteRoom_RoomNotFound_ShouldThrowException() {
+        when(roomRepository.findById(2L)).thenReturn(Optional.empty());
+    
+        assertThrows(RuntimeException.class, () -> roomService.deleteRoom(2L));
+        verify(roomRepository, never()).delete(any(Room.class));
+        verify(seatRepository, never()).findByRoomId(anyLong());
+        verify(bookingRepository, never()).deleteBySeatId(anyLong());
+    }
+
+    @Test
+    void updateRoom_ShouldUpdateRoom() {
+        RoomRequest roomRequest = new RoomRequest();
+        roomRequest.setRoomName("Updated Room Name");
+        roomRequest.setCapacity(100);
+        roomRequest.setLocation("New Location B");
+        roomRequest.setType(2);
+        roomRequest.setStatus(1); // Unavailable
+        long newOpenTimeMillis = Instant.now().plusSeconds(1000).toEpochMilli();
+        long newCloseTimeMillis = Instant.now().plusSeconds(5000).toEpochMilli();
+        roomRequest.setOpenTime(newOpenTimeMillis);
+        roomRequest.setCloseTime(newCloseTimeMillis);
+    
+        // testRoom is the existing room fetched by findById
+        // We expect roomRepository.save to be called with this testRoom instance after modifications
+        when(roomRepository.findById(1L)).thenReturn(Optional.of(testRoom));
+        // When save is called, it will be with the modified testRoom.
+        // For verification, we can capture the argument or ensure save is called on testRoom.
+        // If updateRoom returns the saved entity, we can mock that.
+        when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    
+        Room result = roomService.updateRoom(1L, roomRequest);
+    
+        assertNotNull(result);
+        assertEquals("Updated Room Name", result.getName());
+        assertEquals(100, result.getCapacity());
+        assertEquals("New Location B", result.getLocation());
+        assertEquals(2, result.getType());
+        assertEquals(1, result.getStatus());
+        assertEquals(Instant.ofEpochMilli(newOpenTimeMillis), result.getOpenTime());
+        assertEquals(Instant.ofEpochMilli(newCloseTimeMillis), result.getCloseTime());
+        
+        // Verify that the save method was called on the testRoom instance (or any Room instance)
+        verify(roomRepository).save(testRoom); 
+    }
+    
+    @Test
+    void updateRoom_RoomNotFound_ShouldThrowException() {
+        RoomRequest roomRequest = new RoomRequest();
+        roomRequest.setRoomName("Updated Room Name");
+    
+        when(roomRepository.findById(2L)).thenReturn(Optional.empty());
+    
+        assertThrows(RuntimeException.class, () -> roomService.updateRoom(2L, roomRequest));
+        verify(roomRepository, never()).save(any(Room.class));
     }
 
     @Test
@@ -178,91 +291,6 @@ public class RoomServiceTest {
     }
     */
 
-    @Test
-    void cancelBooking_ShouldCancelAndReleaseSeat() {
-        // 设置模拟行为
-        when(bookingRepository.findByIdAndStudent(1L, testStudent))
-                .thenReturn(Optional.of(testBooking));
-
-        // 执行测试
-        roomService.cancelBooking(testStudent, 1L);
-
-        // 验证结果
-        assertEquals(Seat.SeatStatus.AVAILABLE, testSeat.getStatus());
-        assertEquals(Booking.BookingStatus.CANCELLED, testBooking.getStatus());
-        verify(seatRepository).save(testSeat);
-        verify(bookingRepository).save(testBooking);
-    }
-
-    @Test
-    void cancelBooking_BookingNotFound_ShouldThrowException() {
-        // 设置模拟行为
-        when(bookingRepository.findByIdAndStudent(2L, testStudent))
-                .thenReturn(Optional.empty());
-
-        // 执行测试并验证
-        assertThrows(RuntimeException.class, () ->
-                roomService.cancelBooking(testStudent, 2L));
-    }
-
-    @Test
-    void temporaryLeaveSeat_ShouldUpdateSeatStatus() {
-        // 设置模拟行为
-        when(seatRepository.findById(1L)).thenReturn(Optional.of(testSeat));
-        when(bookingRepository.findByStudentOrderByStartTimeDesc(testStudent))
-                .thenReturn(activeBookings);
-
-        // 执行测试
-        roomService.temporaryLeaveSeat(testStudent, 1L);
-
-        // 验证结果
-        assertEquals(Seat.SeatStatus.TEMPORARY_LEAVE, testSeat.getStatus());
-        verify(seatRepository).save(testSeat);
-    }
-
-    @Test
-    void checkInSeat_ShouldUpdateSeatStatus() {
-        // 设置模拟行为
-        when(seatRepository.findById(1L)).thenReturn(Optional.of(testSeat));
-        when(bookingRepository.findByStudentOrderByStartTimeDesc(testStudent))
-                .thenReturn(activeBookings);
-
-        // 执行测试
-        roomService.checkInSeat(testStudent, 1L);
-
-        // 验证结果
-        assertEquals(Seat.SeatStatus.OCCUPIED, testSeat.getStatus());
-        verify(seatRepository).save(testSeat);
-    }
-
-    @Test
-    void releaseSeat_ShouldCompleteBookingAndReleaseSeat() {
-        // 设置模拟行为
-        when(seatRepository.findById(1L)).thenReturn(Optional.of(testSeat));
-        when(bookingRepository.findByStudentOrderByStartTimeDesc(testStudent))
-                .thenReturn(activeBookings);
-
-        // 执行测试
-        roomService.releaseSeat(testStudent, 1L);
-
-        // 验证结果
-        assertEquals(Seat.SeatStatus.AVAILABLE, testSeat.getStatus());
-        assertEquals(Booking.BookingStatus.COMPLETED, testBooking.getStatus());
-        verify(seatRepository).save(testSeat);
-        verify(bookingRepository).save(testBooking);
-    }
-
-    @Test
-    void getBookingHistory_ShouldReturnBookings() {
-        // 设置模拟行为
-        when(bookingRepository.findByStudentOrderByStartTimeDesc(testStudent))
-                .thenReturn(Collections.singletonList(testBooking));
-
-        // 执行测试
-        List<Booking> result = roomService.getBookingHistory(testStudent);
-
-        // 验证结果
-        assertEquals(1, result.size());
-        assertEquals(testBooking.getId(), result.get(0).getId());
-    }
+    // Removed tests for cancelBooking, temporaryLeaveSeat, checkInSeat, releaseSeat, getBookingHistory
+    // as these functionalities are no longer part of RoomService based on the provided RoomService.java
 }

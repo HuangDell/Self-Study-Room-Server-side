@@ -30,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.springframework.web.servlet.resource.NoResourceFoundException; // 添加导入
+
 @ExtendWith(MockitoExtension.class)
 public class StudentControllerTest {
 
@@ -101,7 +103,7 @@ public class StudentControllerTest {
         testBooking.setRoom(testRoom);
         testBooking.setStartTime(LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC));
         testBooking.setEndTime(LocalDateTime.now().plusHours(3).toInstant(ZoneOffset.UTC));
-        testBooking.setStatus(Booking.BookingStatus.ACTIVE);
+        testBooking.setStatus(1); // 修改处：使用整数状态替代 Booking.BookingStatus.ACTIVE
 
         // 预订请求
         bookingRequest = new BookingRequest();
@@ -127,30 +129,30 @@ public class StudentControllerTest {
 
     @Test
     void leaveSeat_ShouldReturnSuccess() {
-        doNothing().when(roomService).temporaryLeaveSeat(testStudent, 1L);
+        doNothing().when(seatService).temporaryLeaveSeat(testStudent, 1L); // 修改处：roomService -> seatService
 
         ResponseEntity<?> response = studentController.leaveSeat(1L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody() instanceof Map); // 修改处
+        assertTrue(response.getBody() instanceof Map); 
         @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody(); // 修改处
-        assertEquals("Seat set to leave status", responseBody.get("message")); // 修改处
-        verify(roomService).temporaryLeaveSeat(testStudent, 1L);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody(); 
+        assertEquals("Seat set to leave status", responseBody.get("message")); 
+        verify(seatService).temporaryLeaveSeat(testStudent, 1L); // 修改处：roomService -> seatService
     }
 
     @Test
     void releaseSeat_ShouldReturnSuccess() {
-        doNothing().when(roomService).releaseSeat(testStudent, 1L);
+        doNothing().when(seatService).releaseSeat(testStudent, 1L); // 修改处：roomService -> seatService
 
         ResponseEntity<?> response = studentController.releaseSeat(1L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody() instanceof Map); // 修改处
+        assertTrue(response.getBody() instanceof Map); 
         @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody(); // 修改处
-        assertEquals("Seat released successfully", responseBody.get("message")); // 修改处
-        verify(roomService).releaseSeat(testStudent, 1L);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody(); 
+        assertEquals("Seat released successfully", responseBody.get("message")); 
+        verify(seatService).releaseSeat(testStudent, 1L); // 修改处：roomService -> seatService
     }
 
     @Test
@@ -168,16 +170,16 @@ public class StudentControllerTest {
 
     @Test
     void checkInSeat_ShouldReturnSuccess() {
-        doNothing().when(roomService).checkInSeat(testStudent, 1L);
+        doNothing().when(seatService).checkInSeat(testStudent, 1L); // 修改处：roomService -> seatService
 
         ResponseEntity<?> response = studentController.checkInSeat(1L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody() instanceof Map); // 修改处
+        assertTrue(response.getBody() instanceof Map); 
         @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody(); // 修改处
-        assertEquals("Checked in successfully", responseBody.get("message")); // 修改处
-        verify(roomService).checkInSeat(testStudent, 1L);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody(); 
+        assertEquals("Checked in successfully", responseBody.get("message")); 
+        verify(seatService).checkInSeat(testStudent, 1L); // 修改处：roomService -> seatService
     }
 
     @Test
@@ -194,7 +196,7 @@ public class StudentControllerTest {
     }
 
     @Test
-    void bookRoom_ShouldReturnSuccess() { // 方法名在日志中为 bookRoom_ShouldReturnSuccess，代码中为 bookSeat
+    void bookRoom_ShouldReturnSuccess() throws NoResourceFoundException { // 修改此行，添加 throws NoResourceFoundException
         doNothing().when(seatService).bookSeat(testStudent, bookingRequest);
 
         ResponseEntity<?> response = studentController.bookSeat(bookingRequest);
@@ -209,22 +211,22 @@ public class StudentControllerTest {
 
     @Test
     void cancelBooking_ShouldReturnSuccess() {
-        doNothing().when(roomService).cancelBooking(testStudent, 1L);
+        doNothing().when(seatService).cancelBooking(testStudent, 1L); // 修改处：roomService -> seatService
 
         ResponseEntity<?> response = studentController.cancelBooking(1L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(response.getBody() instanceof Map); // 修改处
+        assertTrue(response.getBody() instanceof Map); 
         @SuppressWarnings("unchecked")
-        Map<String, String> responseBody = (Map<String, String>) response.getBody(); // 修改处
-        assertEquals("Booking cancelled successfully", responseBody.get("message")); // 修改处
-        verify(roomService).cancelBooking(testStudent, 1L);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody(); 
+        assertEquals("Booking cancelled successfully", responseBody.get("message")); 
+        verify(seatService).cancelBooking(testStudent, 1L); // 修改处：roomService -> seatService
     }
 
     @Test
     void cancelBooking_NotFound_ShouldReturn404() {
         doThrow(new RuntimeException("Booking not found"))
-                .when(roomService).cancelBooking(testStudent, 2L);
+                .when(seatService).cancelBooking(testStudent, 2L); // 修改处：roomService -> seatService
 
         ResponseEntity<?> response = studentController.cancelBooking(2L);
 
